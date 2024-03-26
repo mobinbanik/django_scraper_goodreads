@@ -2,11 +2,12 @@ from abc import abstractmethod
 from django.db import models
 from django.conf import settings
 
+
 # Create your models here.
 class BaseModel(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='Is Active')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
-    Updated_at = models.DateTimeField(auto_now_add=True, verbose_name='Updated At')
+    updated_at = models.DateTimeField(auto_now_add=True, verbose_name='Updated At')
 
     class Meta(object):
         # This makes this class no longer applied in migration
@@ -86,14 +87,16 @@ class BookGenre(BaseModel):
     book = models.ForeignKey(
         Book,
         models.CASCADE,
+        related_name='book_genres',
     )
     genre = models.ForeignKey(
         Genre,
         models.CASCADE,
+        related_name='book_genres',
     )
 
     def __str__(self):
-        return self.book.title + " " + self.genre.title
+        return f'{self.book.title} ({self.genre.title})'
 
     class Meta:
         verbose_name = 'Book Genre'
@@ -148,6 +151,7 @@ class SearchByKeyword(BaseModel):
     keyword = models.ForeignKey(
         Keyword,
         models.CASCADE,
+        related_name='searches',
     )
     search_type = models.CharField(
         max_length=64,
@@ -175,7 +179,7 @@ class SearchBookByKeywordItem(BaseModel):
     search_by_keyword = models.ForeignKey(
         SearchByKeyword,
         models.CASCADE,
-        related_name='Search By Keyword',
+        related_name='search_book_by_keyword_items',
         verbose_name='Search By Keyword',
     )
     title = models.CharField(
@@ -192,8 +196,10 @@ class SearchBookByKeywordItem(BaseModel):
     book = models.ForeignKey(
         Book,
         models.CASCADE,
+        related_name='search_book_by_keyword_items',
         verbose_name='Book',
     )
+    is_scraped = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.title}({self.search_by_keyword.keyword.title})'
@@ -207,7 +213,7 @@ class SearchGroupByKeywordItem(BaseModel):
     search_by_keyword = models.ForeignKey(
         SearchByKeyword,
         models.CASCADE,
-        related_name='Search By Keyword',
+        related_name='search_group_by_keyword_items',
         verbose_name='Search By Keyword',
     )
     title = models.CharField(
@@ -226,8 +232,9 @@ class SearchGroupByKeywordItem(BaseModel):
         Group,
         models.CASCADE,
         verbose_name='Group',
-        related_name='Group',
+        related_name='search_group_by_keyword_items',
     )
+    is_scraped = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.title}({self.search_by_keyword.keyword.title})'
