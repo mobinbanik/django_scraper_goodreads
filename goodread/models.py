@@ -158,13 +158,13 @@ class SearchByKeyword(BaseModel):
         verbose_name='Search Type',
         null=False,
         blank=False,
-        default=settings.SEARCH_TYPE,
+        default=settings.GOOD_READS_DEFAULT_SEARCH_TYPE,
     )
     page_count = models.IntegerField(
         verbose_name='Page Count',
         null=False,
         blank=False,
-        default=settings.SEARCH_PAGE_COUNT,
+        default=settings.GOOD_READS_DEFAULT_SEARCH_PAGE_COUNT,
     )
 
     def __str__(self):
@@ -196,6 +196,8 @@ class SearchBookByKeywordItem(BaseModel):
     book = models.ForeignKey(
         Book,
         models.CASCADE,
+        blank=True,
+        null=True,
         related_name='search_book_by_keyword_items',
         verbose_name='Book',
     )
@@ -231,6 +233,8 @@ class SearchGroupByKeywordItem(BaseModel):
     group = models.ForeignKey(
         Group,
         models.CASCADE,
+        blank=True,
+        null=True,
         verbose_name='Group',
         related_name='search_group_by_keyword_items',
     )

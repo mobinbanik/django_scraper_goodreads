@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,7 +56,7 @@ ROOT_URLCONF = 'pro_scraper_goodreads.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'template')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -124,5 +124,15 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SEARCH_TYPE = 'books'
-SEARCH_PAGE_COUNT = 5
+GOOD_READS_DEFAULT_SEARCH_TYPE = 'books'
+GOOD_READS_DEFAULT_SEARCH_PAGE_COUNT = 5
+GOOD_READS_MAXIMUM_SEARCH_PAGE_COUNT = 100
+GOOD_READS_BASE_URL = 'https://www.goodreads.com/'
+GOOD_READS_SEARCH_URL = GOOD_READS_BASE_URL + 'search?page={page}&q={query}&search_type={search_type}&tab={tab}'
+
+GOOD_READS_ITEM_CLASS = {
+    'books': 'bookTitle',
+    'groups': 'groupName',
+}
+
+
