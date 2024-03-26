@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from django.db import models
-
+from django.conf import settings
 
 # Create your models here.
 class BaseModel(models.Model):
@@ -21,6 +21,8 @@ class Author(BaseModel):
     full_name = models.CharField(
         max_length=128,
         verbose_name='Full Name',
+        null=False,
+        blank=False,
     )
 
     class Meta:
@@ -32,82 +34,204 @@ class Author(BaseModel):
 
 
 class Genre(BaseModel):
-    def __init__(self, title):
-        self.title = title
+    title = models.CharField(
+        max_length=128,
+        verbose_name='Genre Title',
+        null=False,
+        blank=False,
+    )
+
+    class Meta:
+        verbose_name = 'Genre'
+        verbose_name_plural = 'Genres'
 
     def __str__(self):
         return self.title
 
 
 class Book(BaseModel):
-    def __init__(self, author: Author, title: str, description: str, thumbnail, html_source_code):
-        self.author = author
-        self.title = title
-        self.description = description
-        self.thumbnail = thumbnail
-        self.html_source_code = html_source_code
+    author = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE,
+        related_name='books',
+        verbose_name='Author',
+    )
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Title',
+        null=False,
+        blank=False,
+    )
+    description = models.TextField(
+        verbose_name='Description',
+        null=False,
+        blank=False,
+    )
+    thumbnail = models.TextField()
+    html_source_code = models.TextField(
+        verbose_name='Html source code',
+        null=False,
+        blank=False,
+    )
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name = 'Book'
+        verbose_name_plural = 'Books'
 
 
 class BookGenre(BaseModel):
-    def __init__(self, book, genre):
-        self.book = book
-        self.genre = genre
+    book = models.ForeignKey(
+        Book,
+        models.CASCADE,
+    )
+    genre = models.ForeignKey(
+        Genre,
+        models.CASCADE,
+    )
 
     def __str__(self):
-        return self.book + " " + self.genre
+        return self.book.title + " " + self.genre.title
+
+    class Meta:
+        verbose_name = 'Book Genre'
+        verbose_name_plural = 'Book Genres'
 
 
 class Group(BaseModel):
-    def __init__(self, title: str, group_type: str, thumbnail, html_source_code):
-        self.title = title
-        self.group_type = group_type
-        self.thumbnail = thumbnail
-        self.html_source_code = html_source_code
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Title',
+        null=False,
+        blank=False,
+    )
+    group_type = models.CharField(
+        max_length=255,
+        verbose_name='Group Type',
+        null=True,
+        blank=True,
+    )
+    thumbnail = models.TextField()
+    html_source_code = models.TextField(
+        verbose_name='HTML Source Code',
+        null=False,
+        blank=False,
+    )
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name = 'Group'
+        verbose_name_plural = 'Groups'
 
 
 class Keyword(BaseModel):
-    def __init__(self, title: str):
-        self.title = title
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Title',
+        null=False,
+        blank=False,
+    )
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name = 'Keyword'
+        verbose_name_plural = 'Keywords'
 
 
 class SearchByKeyword(BaseModel):
-    def __init__(self, title, keyword: Keyword, search_type, page_count=SEARCH_PAGE_COUNT):
-        self.title = title
-        self.keyword = keyword
-        self.search_type = search_type
-        self.page_count = page_count
-        self.created_at = datetime.now()
+    keyword = models.ForeignKey(
+        Keyword,
+        models.CASCADE,
+    )
+    search_type = models.CharField(
+        max_length=64,
+        verbose_name='Search Type',
+        null=False,
+        blank=False,
+        default=settings.SEARCH_TYPE,
+    )
+    page_count = models.IntegerField(
+        verbose_name='Page Count',
+        null=False,
+        blank=False,
+        default=settings.SEARCH_PAGE_COUNT,
+    )
 
     def __str__(self):
-        return self.title
+        return self.keyword.title
+
+    class Meta:
+        verbose_name = 'Search By Keyword'
+        verbose_name_plural = 'Search By Keywords'
 
 
 class SearchBookByKeywordItem(BaseModel):
-    def __init__(self, search_by_keyword: SearchByKeyword, title, url):
-        self.search_by_keyword = search_by_keyword
-        self.title = title
-        self.url = url
-        self.book = None
+    search_by_keyword = models.ForeignKey(
+        SearchByKeyword,
+        models.CASCADE,
+        related_name='Search By Keyword',
+        verbose_name='Search By Keyword',
+    )
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Title',
+        null=False,
+        blank=False,
+    )
+    url = models.TextField(
+        verbose_name='URL',
+        null=False,
+        blank=False,
+    )
+    book = models.ForeignKey(
+        Book,
+        models.CASCADE,
+        verbose_name='Book',
+    )
 
     def __str__(self):
         return f'{self.title}({self.search_by_keyword.keyword.title})'
+
+    class Meta:
+        verbose_name = 'Book Search By Keyword Item'
+        verbose_name_plural = 'Book Search By Keyword Items'
 
 
 class SearchGroupByKeywordItem(BaseModel):
-    def __init__(self, search_by_keyword: SearchByKeyword, title, url):
-        self.search_by_keyword = search_by_keyword
-        self.title = title
-        self.url = url
-        self.group = None
+    search_by_keyword = models.ForeignKey(
+        SearchByKeyword,
+        models.CASCADE,
+        related_name='Search By Keyword',
+        verbose_name='Search By Keyword',
+    )
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Title',
+        null=False,
+        blank=False,
+    )
+    url = models.TextField(
+        verbose_name='URL',
+        null=False,
+        blank=False,
+    )
+
+    group = models.ForeignKey(
+        Group,
+        models.CASCADE,
+        verbose_name='Group',
+        related_name='Group',
+    )
 
     def __str__(self):
         return f'{self.title}({self.search_by_keyword.keyword.title})'
+
+    class Meta:
+        verbose_name = 'Group Search By Keyword Item'
+        verbose_name_plural = 'Group Search By Keyword Items'
